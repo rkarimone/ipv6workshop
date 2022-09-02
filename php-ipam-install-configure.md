@@ -59,22 +59,34 @@ GRANT ALL PRIVILEGES ON . TO 'phpipam'@'127.0.0.1' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 QUIT;
 
-Step 2: Install PHP and required modules
+
+**Step 2: Install PHP and required modules**
+
 Next phase is the installation of php and required modules. Run the following commands:
 sudo apt update 
 sudo apt -y install php php-{mysql,curl,gd,intl,pear,imap,memcache,pspell,tidy,xmlrpc,mbstring,gmp,json,xml,fpm}
-Step 3: Install phpIPAM on Ubuntu 20.04/18.04 Linux
+
+**Step 3: Install phpIPAM on Ubuntu 20.04/18.04 Linux**
 We’ll download phpIPAM from Github. Install git first:
+
 sudo apt -y install git
+
 Clone phpIPAM code from github
 sudo git clone --recursive https://github.com/phpipam/phpipam.git /var/www/html/phpipam
+
 Change to clone directory.
+
 cd /var/www/html/phpipam
+
 You can also download phpipam from official Sourceforge repository and extract it to your web server directory.
-Step 4: Configure phpIPAM on Ubuntu 20.04/18.04
+
+**Step 4: Configure phpIPAM on Ubuntu 20.04/18.04**
+
 Change your working directory to /var/www/html/phpipam and copy config.dist.php to config.php, then edit it.
 sudo cp config.dist.php config.php
+
 Edit the file to configure database credentials as added on Step 1:
+
 $ sudo vim config.php
 /**
 * database connection details
@@ -84,14 +96,20 @@ $db['user'] = 'phpipam';
 $db['pass'] = 'PASSWORD-HERE';
 $db['name'] = 'phpipam';
 $db['port'] = 3306;
-Option 1: Using Nginx Web server
+
+**Option 1: Using Nginx Web server**
+
 Install nginx using the command:
+
 sudo systemctl stop apache2 && sudo systemctl disable apache2
 sudo apt -y install nginx
+
 Configure nginx:
 sudo vim /etc/nginx/conf.d/phpipam.conf
+
 Add content:
 Ubuntu 20.04:
+
 server {
     listen       80;
     # root directory
@@ -114,19 +132,24 @@ server {
         }
 
  }
+ 
 Change ownership of the /var/www/ directory to www-data user and group.
+
 sudo chown -R www-data:www-data /var/www/html
 sudo systemctl restart nginx
-Step 5: Finish phpIPAM Installation on Ubuntu 20.04/18.04
+
+
+**Step 5: Finish phpIPAM Installation on Ubuntu 20.04/18.04**
+
 Start the installation process by visiting http://ipam.example.com, replace ipam.example.com with your valid domain name. The URL could also be http://domain.com/phpipam or IP Address instead of DNS name depending on your configuration.
 http://ipam.example.com
 If the domain name used is not a valid DNS record you can modify your hosts file:
+
 # Linux / macOS
 $ sudo vim /etc/hosts
-#E.g 172.21.200.10 ipam.example.com
+172.21.200.10 ipam.example.com
 
-# Windows
-C:\Windows\System32\Drivers\etc\hosts
+
 On the first page, Select “New phpipam installation“
 
 Since we had created a database, we’ll go with “Automatic database installation“.
@@ -135,16 +158,14 @@ For Automatic database installation, set like below.
 
 On successful installation, you should get the admin login page.
 
-The default Login credentials are:
+**The default Login credentials are:**
 Username: admin
 Password: ipamadmin
+
+
 You’re prompted to change the admin password on the first login.
 
 You have successfully installed phpIPAM on Ubuntu 20.04 / Ubuntu 18.04 Linux system.
 
 
 
-
-
-
-A Network Access Server (NAS) running on the system can route authentication requests from dial-in clients to a separate Remote Authentication Dial In User Service (RADIUS) server.
