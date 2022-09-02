@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>XCP-NG|XexProject|Virtualization</title>
+    <meta name="generator" content="CherryTree">
+    <link rel="stylesheet" href="styles.css" type="text/css">
+  </head>
+  <body>
+    <br>
+    <h1><span style="color:#EE0000;">{ FreeRADIUS3 Installation &amp;
+        Configuration }</span></h1>
+    <hr style="height:20px; background-color:gray;"> <span
+      style="color:#263740;">__By Muhammad </span><span
+      style="color:#263740;">Rezaul</span><span style="color:#263740;">
+    </span><span style="color:#263740;">Karim</span><span
+      style="color:#263740;"> (Fiber@Home)</span><span
+      style="color:#263740;"> _First Version-0.1 _Drafted on : February
+      27, 2020</span><br>
+    <br>
+    <span style="color:#0000EE;"> </span>☐ #### Install &amp; Configure
+    FreeRADIOUS3+MySQL+daloRADIUS # Ubuntu-20.04.X #<br>
+    <span style="color:#21C772;"><br>
+    </span> <span style="color:#a020f0;">
+      <h2><font color="#6600cc">// Recommended System Requirements for
+          Practical Lab //</font><br>
+      </h2>
+    </span>
+    <hr style="height:1px; background-color:gray;"> ⇒ Ubuntu 20.04
+    VM/LXC Container<br>
+    ⇒ 4GB RAM<br>
+    ⇒ 4 Core CPU ( Intel or AMD Based)<br>
+    ⇒ Wired (Broadband) Internet connection with decent speed.<br>
+    ⇒ 1 ipv4 (Public) &amp; 1 ipv6 IP <br>
+    ⇒ APACHE2, PHP, MySQL/MariaDB, FreeRADIOUS (Version 3)<br>
+    ⇒ Sufficient time with sincere mind and passion to learn including
+    working knowledge of Linux.<br>
+    <br>
+    <span style="color:#a020f0;">
+      <h2><font color="#6600cc">// Working Steps //</font><br>
+      </h2>
+    </span>
+    <hr style="height:1px; background-color:gray; vertical-align: top;">
+    ☐ Install Ubuntu 20.04 <br>
+    ☐ Put IP address and make sure you are getting Internet connection.
+    <br>
+    ☐ Install &amp; Configure APACHE, PHP, MySQL<br>
+    ☐ Install &amp; Configure FreeRADIUS3<br>
+    ☐ Create Users in RADIUS<br>
+    ☐ Authenticate Users by Using FreeRADIUS.<br>
+    <br>
+    <br>
+    &gt;&gt; Here, we suppose our Installation of&nbsp; OS is complete
+    and we have the following information:-<br>
+    <div class="codebox">
+      <div class="codebox">IP&nbsp;Address&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+          style="color:#a52a2a;font-weight:700">:</span>&nbsp;172.16.208.186&nbsp;<br>
+        Login&nbsp;User&nbsp;ID&nbsp;&nbsp;&nbsp;<span
+          style="color:#a52a2a;font-weight:700">:</span>&nbsp;root&nbsp;<br>
+        Login&nbsp;Password&nbsp;&nbsp;<span
+          style="color:#a52a2a;font-weight:700">:</span>&nbsp;YourSuperSecretPassword<br>
+        <br>
+      </div>
+    </div>
+    <br>
+    &gt;&gt; OK, Let's Login into the Server and Start Working...<br>
+    <div class="codebox">
+      <div class="codebox"><span style="color:#a52a2a;font-weight:700">ping</span>&nbsp;google.com&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+          style="color:#0000ff;font-weight:400">#&nbsp;making&nbsp;sure&nbsp;that,&nbsp;the&nbsp;server&nbsp;is&nbsp;connected&nbsp;to&nbsp;the&nbsp;Internet<br>
+        </span><br>
+        sudo apt update -y<br>
+        sudo apt upgrade -y<br>
+        <br>
+        <span style="color:#0000ff;font-weight:400"></span></div>
+    </div>
+    <br>
+    <br>
+    &gt;&gt; Install APACHE2 WebServer &amp; PHP7.4<br>
+    <div class="codebox">
+      <div class="codebox"><span style="color:#a52a2a;font-weight:700"><br>
+          <font color="#993300">sudo <font color="#000000">apt install
+              software-properties-common ca-certificates lsb-release
+              apt-transport-https </font><br>
+            LC_ALL=C.UTF-8 <font color="#000000">add-apt-repository
+              ppa:ondrej/php <br>
+              <font color="#993300">sudo</font> apt update </font></font><font
+            size="-1" color="#993300"><font color="#000000"><br>
+            </font></font><br>
+          <font color="#000000"><font color="#993300">sudo</font> apt -y
+            install apache2 libapache2-mod-php7.4 php&nbsp;
+            php7.4-{gd,common,mysql,mbstring,xml,curl}<br>
+            <font color="#993300">sudo</font> apt install php7.4-fpm
+            php7.4-common php7.4-mysql php7.4-xml php7.4-xmlrpc
+            php7.4-curl php7.4-gd php7.4-imagick php7.4-cli php7.4-dev
+            php7.4-imap php7.4-mbstring php7.4-soap php7.4-zip
+            php7.4-bcmath -y<br>
+          </font><br>
+        </span></div>
+    </div>
+    <br>
+    <h2><font color="#a020f0"><font color="#6600cc">// Storage
+          Disk/Volume Configuration (ZFS+NFS) //</font><br>
+      </font></h2>
+    <hr style="height:1px; background-color:gray;">&gt;&gt; We will
+    configure our Virtual Machines (Guest OS) storage in a separate Hard
+    Disk using ZFS (Zetabyte File System) which will help us to take
+    snapshots and replicate the storage to another Hardware
+    (Workstaion/Server) for backup and redundancy.<br>
+    <br>
+    <div class="codebox">
+      <div class="codebox"><span style="color:#a52a2a;font-weight:700">sudo</span>&nbsp;yum&nbsp;<span
+          style="color:#a52a2a;font-weight:700">install</span>&nbsp;zfs&nbsp;nfs-utils<br>
+        <span style="color:#a52a2a;font-weight:700">sudo</span>&nbsp;depmod&nbsp;-a<br>
+        <span style="color:#a52a2a;font-weight:700">modprobe</span>&nbsp;zfs<br>
+        <br>
+        <span style="color:#a52a2a;font-weight:700">sudo</span>&nbsp;vim&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>etc<span
+          style="color:#a52a2a;font-weight:700">/</span>sparse_dd.conf<br>
+        unbuffered&nbsp;=&nbsp;<span
+          style="color:#a52a2a;font-weight:700">false</span><br>
+        <br>
+        <span style="color:#a52a2a;font-weight:700">echo</span>&nbsp;10&nbsp;&gt;&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>sys<span
+          style="color:#a52a2a;font-weight:700">/</span>module<span
+          style="color:#a52a2a;font-weight:700">/</span>zfs<span
+          style="color:#a52a2a;font-weight:700">/</span>parameters<span
+          style="color:#a52a2a;font-weight:700">/</span>zfs_txg_timeout<br>
+        <span style="color:#a52a2a;font-weight:700">echo</span>&nbsp;3221225472&nbsp;&gt;&gt;&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>sys<span
+          style="color:#a52a2a;font-weight:700">/</span>module<span
+          style="color:#a52a2a;font-weight:700">/</span>zfs<span
+          style="color:#a52a2a;font-weight:700">/</span>parameters<span
+          style="color:#a52a2a;font-weight:700">/</span>zfs_arc_max&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+          style="color: rgb(165, 42, 42);">//</span>&nbsp;Allocating&nbsp;3GB&nbsp;of&nbsp;RAM&nbsp;For&nbsp;ZFS&nbsp;Cache<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+          style="color:#a52a2a;font-weight:700">//</span>&nbsp;1073741824&nbsp;=&nbsp;1GB<br>
+        <span style="color:#0000ff;font-weight:400">##&nbsp;3GB&nbsp;(Total&nbsp;RAM&nbsp;12GB,&nbsp;assigining&nbsp;2GB&nbsp;for&nbsp;zfs&nbsp;cache)&nbsp;|&nbsp;adjust&nbsp;(~25%)&nbsp;your&nbsp;RAM&nbsp;accourding&nbsp;to&nbsp;your&nbsp;server's&nbsp;total&nbsp;RAM</span><br>
+        <span style="color:#a52a2a;font-weight:700">echo</span>&nbsp;<span
+          style="color:#ff00ff;font-weight:400">"<b>options&nbsp;zfs&nbsp;zfs_arc_max=3221225472</b>"</span>&nbsp;&gt;&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>etc<span
+          style="color:#a52a2a;font-weight:700">/</span>modprobe.d<span
+          style="color:#a52a2a;font-weight:700">/</span>zfs.conf<br>
+        <br>
+        <span style="color:#a52a2a;font-weight:700">sudo</span>&nbsp;vim&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>etc<span
+          style="color:#a52a2a;font-weight:700">/</span>rc.local<br>
+        <span style="color:#a52a2a;font-weight:700">echo</span>&nbsp;10&nbsp;&gt;&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>sys<span
+          style="color:#a52a2a;font-weight:700">/</span>module<span
+          style="color:#a52a2a;font-weight:700">/</span>zfs<span
+          style="color:#a52a2a;font-weight:700">/</span>parameters<span
+          style="color:#a52a2a;font-weight:700">/</span>zfs_txg_timeout<br>
+        <span style="color:#a52a2a;font-weight:700">echo</span>&nbsp;3221225472&nbsp;&gt;&gt;&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>sys<span
+          style="color:#a52a2a;font-weight:700">/</span>module<span
+          style="color:#a52a2a;font-weight:700">/</span>zfs<span
+          style="color:#a52a2a;font-weight:700">/</span>parameters<span
+          style="color:#a52a2a;font-weight:700">/</span>zfs_arc_max<br>
+        <span style="color:#a52a2a;font-weight:700">ulimit</span>&nbsp;-n&nbsp;102400<br>
+        <br>
+        <span style="color:#a52a2a;font-weight:700">chmod</span>&nbsp;+x&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>etc<span
+          style="color:#a52a2a;font-weight:700">/</span>rc.local<br>
+        <span style="color:#a52a2a;font-weight:700">sudo</span>&nbsp;systemctl&nbsp;reboot</div>
+    </div>
+    <br>
+    <h2><font color="#a020f0"><font color="#6600cc">// ZFS Pool Creation
+          &amp; Configuration //</font><br>
+      </font></h2>
+    <hr style="height:1px; background-color:gray;">&gt;&gt; Now we will
+    identify the Storage Disk ID and will create ZFS pool (volume)<br>
+    <div class="codebox">
+      <div class="codebox"><span style="color:#a52a2a;font-weight:700">sudo</span>&nbsp;fdisk&nbsp;-l&nbsp;<span
+          style="color:#a52a2a;font-weight:700">|grep</span>&nbsp;dev&nbsp;<span
+          style="color:#a52a2a;font-weight:700">|grep</span>&nbsp;sd*<br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">#&nbsp;***&nbsp;Command&nbsp;Output&nbsp;***</span><br>
+        Disk&nbsp;<span style="color:#a52a2a;font-weight:700">/</span>dev<span
+          style="color:#a52a2a;font-weight:700">/</span>sda<span
+          style="color:#a52a2a;font-weight:700">:</span>&nbsp;3000.6&nbsp;GB,&nbsp;3000592982016&nbsp;bytes,&nbsp;5860533168&nbsp;sectors&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+          style="color:#a52a2a;font-weight:700">//</span>&nbsp;Our&nbsp;Hypervisor&nbsp;OS&nbsp;disk<br>
+        Disk&nbsp;<span style="color:#a52a2a;font-weight:700">/</span>dev<span
+          style="color:#a52a2a;font-weight:700">/</span>sdb<span
+          style="color:#a52a2a;font-weight:700">:</span>&nbsp;2000.4&nbsp;GB,&nbsp;2000398934016&nbsp;bytes,&nbsp;3907029168&nbsp;sectors&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+          style="color:#a52a2a;font-weight:700">//</span>&nbsp;Our&nbsp;Targated&nbsp;Data&nbsp;disk&nbsp;1<br>
+        Disk&nbsp;<span style="color:#a52a2a;font-weight:700">/</span>dev<span
+          style="color:#a52a2a;font-weight:700">/</span>sdc<span
+          style="color:#a52a2a;font-weight:700">:</span>&nbsp;4000.8&nbsp;GB,&nbsp;4000787030016&nbsp;bytes,&nbsp;7814037168&nbsp;sectors&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+          style="color:#a52a2a;font-weight:700">//</span>&nbsp;Our&nbsp;Targated&nbsp;Data&nbsp;disk&nbsp;2<br>
+        <br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">###&nbsp;Initializing&nbsp;Data&nbsp;Disks&nbsp;(Will&nbsp;destroy&nbsp;all&nbsp;existing&nbsp;data)</span><br>
+        sgdisk&nbsp;--zap-all&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>dev<span
+          style="color:#a52a2a;font-weight:700">/</span>sdb<br>
+        sgdisk&nbsp;--zap-all&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>dev<span
+          style="color:#a52a2a;font-weight:700">/</span>sdc<br>
+        <br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">###&nbsp;Finding&nbsp;the&nbsp;disk-ids</span><br>
+        <span style="color:#a52a2a;font-weight:700">ls</span>&nbsp;-la&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>dev<span
+          style="color:#a52a2a;font-weight:700">/</span>disk<span
+          style="color:#a52a2a;font-weight:700">/</span>by-id<span
+          style="color:#a52a2a;font-weight:700">/</span>&nbsp;<span
+          style="color:#a52a2a;font-weight:700">|grep</span>&nbsp;sdb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+          style="color:#a52a2a;font-weight:700">//</span>&nbsp;<br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">#&nbsp;***&nbsp;Command&nbsp;Output&nbsp;***</span><br>
+lrwxrwxrwx&nbsp;1&nbsp;root&nbsp;root&nbsp;&nbsp;&nbsp;9&nbsp;Feb&nbsp;29&nbsp;15<span
+          style="color:#a52a2a;font-weight:700">:</span>43&nbsp;ata-WDC_WD20EZRZ-00Z5HB0_WD-WCC4N1CPUSRH&nbsp;-&gt;&nbsp;..<span
+          style="color:#a52a2a;font-weight:700">/</span>..<span
+          style="color:#a52a2a;font-weight:700">/</span>sdb<br>
+lrwxrwxrwx&nbsp;1&nbsp;root&nbsp;root&nbsp;&nbsp;&nbsp;9&nbsp;Feb&nbsp;29&nbsp;15<span
+          style="color:#a52a2a;font-weight:700">:</span>43&nbsp;wwn-0x50014ee20dbc68d5&nbsp;-&gt;&nbsp;..<span
+          style="color:#a52a2a;font-weight:700">/</span>..<span
+          style="color:#a52a2a;font-weight:700">/</span>sdb<br>
+        <br>
+        <span style="color:#a52a2a;font-weight:700">ls</span>&nbsp;-la&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>dev<span
+          style="color:#a52a2a;font-weight:700">/</span>disk<span
+          style="color:#a52a2a;font-weight:700">/</span>by-id<span
+          style="color:#a52a2a;font-weight:700">/</span>&nbsp;<span
+          style="color:#a52a2a;font-weight:700">|grep</span>&nbsp;sdc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+          style="color:#a52a2a;font-weight:700">//</span>&nbsp;<br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">#&nbsp;***&nbsp;Command&nbsp;Output&nbsp;***</span><br>
+lrwxrwxrwx&nbsp;1&nbsp;root&nbsp;root&nbsp;&nbsp;&nbsp;9&nbsp;Feb&nbsp;29&nbsp;15<span
+          style="color:#a52a2a;font-weight:700">:</span>43&nbsp;ata-WDC_WD40PURX-64N96Y0_WD-WCC7K1NYPAYF&nbsp;-&gt;&nbsp;..<span
+          style="color:#a52a2a;font-weight:700">/</span>..<span
+          style="color:#a52a2a;font-weight:700">/</span>sdc<br>
+lrwxrwxrwx&nbsp;1&nbsp;root&nbsp;root&nbsp;&nbsp;&nbsp;9&nbsp;Feb&nbsp;29&nbsp;15<span
+          style="color:#a52a2a;font-weight:700">:</span>43&nbsp;wwn-0x50014ee265c762e8&nbsp;-&gt;&nbsp;..<span
+          style="color:#a52a2a;font-weight:700">/</span>..<span
+          style="color:#a52a2a;font-weight:700">/</span>sdc<br>
+        <br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">###&nbsp;Creating&nbsp;the&nbsp;ZFS&nbsp;mirrored&nbsp;(Like&nbsp;RAID#1)&nbsp;pool</span><br>
+zpool&nbsp;create&nbsp;-o&nbsp;ashift=12&nbsp;-f&nbsp;vol1&nbsp;mirror&nbsp;ata-WDC_WD20EZRZ-00Z5HB0_WD-WCC4N1CPUSRH&nbsp;ata-WDC_WD40PURX-64N96Y0_WD-WCC7K1NYPAYF&nbsp;<br>
+        <br>
+        zpool&nbsp;status<br>
+        zpool&nbsp;list<br>
+        zfs&nbsp;list</div>
+    </div>
+    <br>
+    <h2><font color="#a020f0"><font color="#6600cc">// NFS Server
+          Configuration //</font><br>
+      </font></h2>
+    <hr style="height:1px; background-color:gray;">&gt;&gt; We will
+    configure NFS-Server Storage Repository for XCP-NG to Access
+    Mirrored Data Pool<br>
+    <div class="codebox">
+      <div class="codebox">zfs&nbsp;create&nbsp;vol1<span
+          style="color:#a52a2a;font-weight:700">/</span>node2nfs4sr1<br>
+        zfs&nbsp;create&nbsp;vol1<span
+          style="color:#a52a2a;font-weight:700">/</span>iso<br>
+        <br>
+        zfs&nbsp;<span style="color:#a52a2a;font-weight:700">set</span>&nbsp;<span
+          style="color:#a52a2a;font-weight:700">sync</span>=disabled&nbsp;vol1<span
+          style="color:#a52a2a;font-weight:700">/</span>node2nfs4sr1<br>
+        zfs&nbsp;<span style="color:#a52a2a;font-weight:700">set</span>&nbsp;compress=lz4&nbsp;vol1<span
+          style="color:#a52a2a;font-weight:700">/</span>node2nfs4sr1<br>
+        zfs&nbsp;<span style="color:#a52a2a;font-weight:700">set</span>&nbsp;atime=off&nbsp;vol1<span
+          style="color:#a52a2a;font-weight:700">/</span>node2nfs4sr1<br>
+        <br>
+        <br>
+        zfs&nbsp;<span style="color:#a52a2a;font-weight:700">set</span>&nbsp;<span
+          style="color:#a52a2a;font-weight:700">sync</span>=disabled&nbsp;vol1<span
+          style="color:#a52a2a;font-weight:700">/</span>iso<br>
+        zfs&nbsp;<span style="color:#a52a2a;font-weight:700">set</span>&nbsp;compress=lz4&nbsp;vol1<span
+          style="color:#a52a2a;font-weight:700">/</span>iso<br>
+        zfs&nbsp;<span style="color:#a52a2a;font-weight:700">set</span>&nbsp;atime=off&nbsp;vol1<span
+          style="color:#a52a2a;font-weight:700">/</span>iso<br>
+        <br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">#&nbsp;*NFS&nbsp;LOCAL&nbsp;SERVER&nbsp;|&nbsp;WHY&nbsp;NOT&nbsp;LOCAL&nbsp;MOUNT&nbsp;-&nbsp;There&nbsp;is&nbsp;some&nbsp;issues&nbsp;regarding&nbsp;zfs&nbsp;storage&nbsp;with&nbsp;xcp-ng&nbsp;storage-repository&nbsp;pool</span><br>
+        <br>
+        yum&nbsp;<span style="color:#a52a2a;font-weight:700">install</span>&nbsp;nfs-utils&nbsp;nfs4-acl-tools&nbsp;portmap<br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">#NFSv4&nbsp;for&nbsp;main&nbsp;storage</span><br>
+        <span style="color:#a52a2a;font-weight:700">chmod</span>&nbsp;-R&nbsp;755&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>vol1<span
+          style="color:#a52a2a;font-weight:700">/</span>node2nfs4sr1<br>
+        <span style="color:#a52a2a;font-weight:700">chmod</span>&nbsp;-R&nbsp;777&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>vol1<span
+          style="color:#a52a2a;font-weight:700">/</span>node2nfs4sr1<span
+          style="color:#a52a2a;font-weight:700">/</span><br>
+        <span style="color:#a52a2a;font-weight:700">chown</span>&nbsp;nfsnobody<span
+          style="color:#a52a2a;font-weight:700">:</span>nfsnobody&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>vol1<span
+          style="color:#a52a2a;font-weight:700">/</span>node2nfs4sr1<br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">#NFSv3&nbsp;for&nbsp;ISO&nbsp;storage</span><br>
+        <span style="color:#a52a2a;font-weight:700">chmod</span>&nbsp;-R&nbsp;755&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>vol1<span
+          style="color:#a52a2a;font-weight:700">/</span>iso<br>
+        <span style="color:#a52a2a;font-weight:700">chmod</span>&nbsp;-R&nbsp;777&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>vol1<span
+          style="color:#a52a2a;font-weight:700">/</span>iso<span
+          style="color:#a52a2a;font-weight:700">/</span><br>
+        <span style="color:#a52a2a;font-weight:700">chown</span>&nbsp;nfsnobody<span
+          style="color:#a52a2a;font-weight:700">:</span>nfsnobody&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>vol1<span
+          style="color:#a52a2a;font-weight:700">/</span>iso<br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">#NFSv4&nbsp;for&nbsp;main&nbsp;storage</span><br>
+        zfs&nbsp;<span style="color:#a52a2a;font-weight:700">set</span>&nbsp;sharenfs=on&nbsp;vol1<span
+          style="color:#a52a2a;font-weight:700">/</span>node2nfs4sr1<br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">#NFSv3&nbsp;for&nbsp;ISO&nbsp;storage</span><br>
+        zfs&nbsp;<span style="color:#a52a2a;font-weight:700">set</span>&nbsp;sharenfs=on&nbsp;vol1<span
+          style="color:#a52a2a;font-weight:700">/</span>iso<br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">###&nbsp;Starting/ReStarting&nbsp;Services</span><br>
+        systemctl&nbsp;<span style="color:#a52a2a;font-weight:700">enable</span>&nbsp;rpcbind<br>
+        systemctl&nbsp;<span style="color:#a52a2a;font-weight:700">enable</span>&nbsp;nfs-server<br>
+        systemctl&nbsp;<span style="color:#a52a2a;font-weight:700">enable</span>&nbsp;nfs-lock<br>
+        systemctl&nbsp;<span style="color:#a52a2a;font-weight:700">enable</span>&nbsp;nfs-idmap<br>
+        systemctl&nbsp;start&nbsp;rpcbind<br>
+        systemctl&nbsp;start&nbsp;nfs-server<br>
+        systemctl&nbsp;start&nbsp;nfs-lock<br>
+        systemctl&nbsp;start&nbsp;nfs-idmap<br>
+        systemctl&nbsp;daemon-reload<br>
+        <br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">###&nbsp;Configure&nbsp;NFS&nbsp;Exports&nbsp;Locations&nbsp;</span><br>
+        <span style="color:#a52a2a;font-weight:700">sudo</span>&nbsp;vim&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>etc<span
+          style="color:#a52a2a;font-weight:700">/</span>exports<br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">#NFSv4</span><br>
+        <span style="color:#a52a2a;font-weight:700">/</span>vol1<span
+          style="color:#a52a2a;font-weight:700">/</span>node2nfs4sr1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;127.0.0.1<span
+          style="color:#a52a2a;font-weight:700">/</span>32<span
+          style="color:#a52a2a;font-weight:700">(</span>rw,fsid=0,insecure,no_subtree_check,async<span
+          style="color:#a52a2a;font-weight:700">)</span><br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">#NFSv3</span><br>
+        <span style="color:#a52a2a;font-weight:700">/</span>vol1<span
+          style="color:#a52a2a;font-weight:700">/</span>iso&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;127.0.0.1<span
+          style="color:#a52a2a;font-weight:700">/</span>32<span
+          style="color:#a52a2a;font-weight:700">(</span>rw,insecure,no_subtree_check,async<span
+          style="color:#a52a2a;font-weight:700">)</span><br>
+        <br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">#A&nbsp;little&nbsp;tuning</span><br>
+        <span style="color:#a52a2a;font-weight:700">sudo</span>&nbsp;vim&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>etc<span
+          style="color:#a52a2a;font-weight:700">/</span>sysconfig<span
+          style="color:#a52a2a;font-weight:700">/</span>nfs<br>
+        <span style="color:#6a5acd;font-weight:400">RPCNFSDCOUNT</span>=16<br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">###&nbsp;Starting/ReStarting&nbsp;NFS&nbsp;Services</span><br>
+        systemctl&nbsp;restart&nbsp;rpcbind<br>
+        systemctl&nbsp;restart&nbsp;nfs-server<br>
+        systemctl&nbsp;restart&nbsp;nfs-lock<br>
+        systemctl&nbsp;restart&nbsp;nfs-idmap<br>
+        systemctl&nbsp;daemon-reload<br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">#Cheking&nbsp;the&nbsp;exports</span><br>
+        exportfs&nbsp;-r<br>
+        exportfs<br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">###&nbsp;Stopping&nbsp;Commands&nbsp;of&nbsp;NFS&nbsp;Server</span><br>
+        systemctl&nbsp;stop&nbsp;rpcbind<br>
+        systemctl&nbsp;stop&nbsp;nfs-server<br>
+        systemctl&nbsp;stop&nbsp;nfs-lock<br>
+        systemctl&nbsp;stop&nbsp;nfs-idmap</div>
+    </div>
+    <br>
+    <h2><font color="#a020f0"><font color="#6600cc">// NFS Configuration
+          Testing &amp; Validation //</font><br>
+      </font></h2>
+    <hr style="height:1px; background-color:gray;">&gt;&gt; Mounting and
+    Testing NFS<br>
+    <div class="codebox">
+      <div class="codebox">yum&nbsp;<span
+          style="color:#a52a2a;font-weight:700">install</span>&nbsp;nfs-utils&nbsp;nfs4-acl-tools&nbsp;portmap<br>
+        <br>
+        systemctl&nbsp;start&nbsp;rpcbind&nbsp;nfs-idmap<br>
+        systemctl&nbsp;<span style="color:#a52a2a;font-weight:700">enable</span>&nbsp;rpcbind&nbsp;nfs-idmap<br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">#NFSv4</span><br>
+        <span style="color:#a52a2a;font-weight:700">mkdir</span>&nbsp;-p&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>mnt<span
+          style="color:#a52a2a;font-weight:700">/</span>node2nfs4sr1<br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">#NFSv3</span><br>
+        <span style="color:#a52a2a;font-weight:700">mkdir</span>&nbsp;-p&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>mnt<span
+          style="color:#a52a2a;font-weight:700">/</span>iso<br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">#NFSv4</span><br>
+        <span style="color:#a52a2a;font-weight:700">mount</span>&nbsp;-t&nbsp;nfs4&nbsp;127.0.0.1<span
+          style="color:#a52a2a;font-weight:700">:/</span>&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>mnt<span
+          style="color:#a52a2a;font-weight:700">/</span>node2nfs4sr1<br>
+        <span style="color:#0000ff;font-weight:400">#NFSv3</span><br>
+        <span style="color:#a52a2a;font-weight:700">mount</span>&nbsp;-t&nbsp;nfs&nbsp;127.0.0.1<span
+          style="color:#a52a2a;font-weight:700">:/</span>vol1<span
+          style="color:#a52a2a;font-weight:700">/</span>iso&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>mnt<span
+          style="color:#a52a2a;font-weight:700">/</span>iso<br>
+        <br>
+        <span style="color:#a52a2a;font-weight:700">df</span>&nbsp;-kh<br>
+        <span style="color:#a52a2a;font-weight:700">mount</span>&nbsp;<span
+          style="color:#a52a2a;font-weight:700">|</span>&nbsp;<span
+          style="color:#a52a2a;font-weight:700">grep</span>&nbsp;nfs<br>
+        <span style="color:#a52a2a;font-weight:700">df</span>&nbsp;-hT<br>
+        <br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">#&nbsp;General&nbsp;Performance&nbsp;Check</span><br>
+        <span style="color:#a52a2a;font-weight:700">dd</span>&nbsp;if=<span
+          style="color:#a52a2a;font-weight:700">/</span>dev<span
+          style="color:#a52a2a;font-weight:700">/</span>zero&nbsp;of=<span
+          style="color:#a52a2a;font-weight:700">/</span>mnt<span
+          style="color:#a52a2a;font-weight:700">/</span>node2nfs4sr1<span
+          style="color:#a52a2a;font-weight:700">/</span>file1.out&nbsp;bs=1M&nbsp;count=10k<br>
+        <span style="color:#a52a2a;font-weight:700">dd</span>&nbsp;if=<span
+          style="color:#a52a2a;font-weight:700">/</span>dev<span
+          style="color:#a52a2a;font-weight:700">/</span>zero&nbsp;of=<span
+          style="color:#a52a2a;font-weight:700">/</span>mnt<span
+          style="color:#a52a2a;font-weight:700">/</span>iso<span
+          style="color:#a52a2a;font-weight:700">/</span>file1.out&nbsp;bs=1M&nbsp;count=10k<br>
+        <br>
+        <span style="color:#a52a2a;font-weight:700">umount</span>&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>mnt<span
+          style="color:#a52a2a;font-weight:700">/</span>node2nfs4sr1<br>
+        <span style="color:#a52a2a;font-weight:700">umount</span>&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>mnt<span
+          style="color:#a52a2a;font-weight:700">/</span>iso<br>
+        <br>
+        <span style="color:#a52a2a;font-weight:700">umount</span>&nbsp;-l&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>mnt<span
+          style="color:#a52a2a;font-weight:700">/</span>node2nfs4sr1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+          style="color:#a52a2a;font-weight:700">;</span>&nbsp;<span
+          style="color:#a52a2a;font-weight:700">if</span>&nbsp;mount-point&nbsp;hang<br>
+        <span style="color:#a52a2a;font-weight:700">umount</span>&nbsp;-l&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>mnt<span
+          style="color:#a52a2a;font-weight:700">/</span>iso&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+          style="color:#a52a2a;font-weight:700">;</span>&nbsp;<span
+          style="color:#a52a2a;font-weight:700">if</span>&nbsp;mount-point&nbsp;hang<br>
+        <br>
+        systemctl&nbsp;stop&nbsp;rpcbind&nbsp;nfs-idmap</div>
+    </div>
+    <br>
+    <h2><font color="#6600cc">// INSTALL XCP-NG-CENTER-GUI //</font><br>
+    </h2>
+    <hr style="height:1px; background-color:gray;">&lt;&lt; Follow Video
+    Tutorial &gt;&gt;<br>
+    <h2><font color="#6600cc">// NFS MOUNT VIA XCP-NG-CENTER-GUI //</font><br>
+    </h2>
+    <hr style="height:1px; background-color:gray;">
+    <h3>&lt;&lt; Follow Video Tutorial &gt;&gt;<br>
+    </h3>
+    <div class="codebox">
+      <div class="codebox"><span style="color:#a52a2a;font-weight:700">sudo</span>&nbsp;reboot</div>
+    </div>
+    <font color="#6600cc"><br>
+    </font>
+    <h2><font color="#6600cc">// UPLOADING ISO TO THE ISO REPOSITORY //</font><br>
+    </h2>
+    <hr style="height:1px; background-color:gray;">
+    <h3>&lt;&lt; Follow Video Tutorial &gt;&gt;</h3>
+    <div class="codebox">
+      <div class="codebox">yum&nbsp;<span
+          style="color:#a52a2a;font-weight:700">install</span>&nbsp;-y&nbsp;proftpd&nbsp;openssl&nbsp;proftpd-utils<br>
+        systemctl&nbsp;start&nbsp;proftpd.service<br>
+        systemctl&nbsp;<span style="color:#a52a2a;font-weight:700">enable</span>&nbsp;proftpd.service<br>
+        <br>
+        <br>
+        groupadd&nbsp;ftpgroup<br>
+        useradd&nbsp;&nbsp;-G&nbsp;ftpgroup&nbsp;iso&nbsp;-s&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>sbin<span
+          style="color:#a52a2a;font-weight:700">/</span>nologin&nbsp;-d&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>vol1<span
+          style="color:#a52a2a;font-weight:700">/</span>node2nfs4sr1<span
+          style="color:#a52a2a;font-weight:700">/</span>iso<br>
+        <span style="color:#a52a2a;font-weight:700">passwd</span>&nbsp;iso<br>
+        <br>
+        <span style="color:#a52a2a;font-weight:700">chmod</span>&nbsp;-R&nbsp;1750&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>vol1<span
+          style="color:#a52a2a;font-weight:700">/</span>node2nfs4sr1<span
+          style="color:#a52a2a;font-weight:700">/</span>iso<br>
+      </div>
+    </div>
+    <br>
+    <h2><font color="#6600cc">// CREATE SOME VM USING XCP-NG-CENTER-GUI
+        //</font><br>
+    </h2>
+    <hr style="height:1px; background-color:gray;">
+    <h3>&lt;&lt; Follow Video Tutorial &gt;&gt;<br>
+    </h3>
+    <img src="images/21-3.png" alt="images/21-3.png"><br>
+    <br>
+    <h2><font color="#6600cc">// POST-INSTALLTION WORKS //</font><br>
+    </h2>
+    <hr style="height:1px; background-color:gray;">
+    <div class="codebox">
+      <div class="codebox"><br>
+        <span style="color:#a52a2a;font-weight:700">sudo</span>&nbsp;xe&nbsp;pool-list<br>
+        <span style="color:#a52a2a;font-weight:700">sudo</span>&nbsp;xe&nbsp;pool-param-set&nbsp;uuid=UUID&nbsp;other-config<span
+          style="color:#a52a2a;font-weight:700">:</span>auto_poweron=<span
+          style="color:#a52a2a;font-weight:700">true</span><br>
+        <br>
+        <span style="color:#a52a2a;font-weight:700">sudo</span>&nbsp;xe&nbsp;vm-list<br>
+        <span style="color:#a52a2a;font-weight:700">sudo</span>&nbsp;xe&nbsp;vm-param-set&nbsp;uuid=UUID&nbsp;other-config<span
+          style="color:#a52a2a;font-weight:700">:</span>auto_poweron=<span
+          style="color:#a52a2a;font-weight:700">true</span><br>
+        <br>
+        <span style="color:#a52a2a;font-weight:700">sudo</span>&nbsp;xe&nbsp;host-list<br>
+        <span style="color:#a52a2a;font-weight:700">sudo</span>&nbsp;xe&nbsp;pool-list<br>
+        <span style="color:#a52a2a;font-weight:700">sudo</span>&nbsp;xe&nbsp;pool-param-set&nbsp;uuid=503222ae-2181-2aaf-b7a5-7326ca7c203d&nbsp;other-config<span
+          style="color:#a52a2a;font-weight:700">:</span>auto_poweron=<span
+          style="color:#a52a2a;font-weight:700">true</span><br>
+        <br>
+        <br>
+        <span style="color:#a52a2a;font-weight:700">sudo</span>&nbsp;xe&nbsp;vm-list<br>
+        <span style="color:#a52a2a;font-weight:700">sudo</span>&nbsp;xe&nbsp;vm-param-set&nbsp;uuid=72e3d8c9-527f-803c-5e18-9648758236a4&nbsp;other-config<span
+          style="color:#a52a2a;font-weight:700">:</span>auto_poweron=<span
+          style="color:#a52a2a;font-weight:700">true</span><br>
+        <span style="color:#a52a2a;font-weight:700">sudo</span>&nbsp;xe&nbsp;vm-param-set&nbsp;uuid=72e3d8c9-527f-803c-5e18-9648758236a4&nbsp;platform<span
+          style="color:#a52a2a;font-weight:700">:</span>exp-nested-hvm=<span
+          style="color:#a52a2a;font-weight:700">true</span><br>
+      </div>
+    </div>
+    <br>
+    <br>
+    <h2><font color="#6600cc">// PERFORMANCE TUNING OF THE SYSTEMS &amp;
+        SOME EXTRA COMMANDS //</font><br>
+    </h2>
+    <hr style="height:1px; background-color:gray;">
+    <h3>&lt;&lt; Follow Video Tutorial &gt;&gt;</h3>
+    <div class="codebox">
+      <div class="codebox"><span style="color:#a52a2a;font-weight:700">echo</span>&nbsp;65536&nbsp;&gt;&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>proc<span
+          style="color:#a52a2a;font-weight:700">/</span>sys<span
+          style="color:#a52a2a;font-weight:700">/</span>net<span
+          style="color:#a52a2a;font-weight:700">/</span>core<span
+          style="color:#a52a2a;font-weight:700">/</span>rmem_default<br>
+        <span style="color:#a52a2a;font-weight:700">echo</span>&nbsp;65536&nbsp;&gt;&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>proc<span
+          style="color:#a52a2a;font-weight:700">/</span>sys<span
+          style="color:#a52a2a;font-weight:700">/</span>net<span
+          style="color:#a52a2a;font-weight:700">/</span>core<span
+          style="color:#a52a2a;font-weight:700">/</span>rmem_max<br>
+        <br>
+      </div>
+      <div class="codebox"> <span style="color:#0000ff;font-weight:400">#############&nbsp;Network&nbsp;Tweek</span><br>
+xe&nbsp;vif-param-set&nbsp;uuid=&lt;vif_uuid&gt;&nbsp;other-config<span
+          style="color:#a52a2a;font-weight:700">:</span>mtu=9000<br>
+        xe&nbsp;pif-plug&nbsp;uuid=83750d2d-dd36-787c-da1c-951d7afc2cf0<br>
+        xe&nbsp;pif-list&nbsp;to&nbsp;see&nbsp;the&nbsp;new&nbsp;PIF<br>
+        <br>
+        ovs-vsctl&nbsp;<span style="color:#a52a2a;font-weight:700">set</span>&nbsp;int&nbsp;xenbr0&nbsp;mtu_request=9000<br>
+        ip&nbsp;link&nbsp;<span style="color:#a52a2a;font-weight:700">set</span>&nbsp;eth1&nbsp;mtu&nbsp;9000<br>
+        <br>
+        xe&nbsp;pbd-unplug&nbsp;uuid=pbd_uuid<br>
+        xe&nbsp;sr-destroy&nbsp;uuid=sr_uuid<br>
+        xe&nbsp;sr-forget&nbsp;uuid=sr_uuid<br>
+        <br>
+        xe&nbsp;pbd-list<br>
+        xe&nbsp;pbd-plug&nbsp;uuid=pbd_uuid<br>
+        <br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">#############&nbsp;Shutdown&nbsp;Script</span><br>
+        vim <span style="color:#a52a2a;font-weight:700">/</span>usr<span
+          style="color:#a52a2a;font-weight:700">/</span>bin<span
+          style="color:#a52a2a;font-weight:700">/</span>XShutdown.sh
+        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp; <span
+          style="color:#0000ff;font-weight:400"># Custom Shutdown Script</span>
+        &nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+        <br>
+xe&nbsp;pbd-unplug&nbsp;uuid=a2328c1e-9a2a-324c-3411-17c8f59cc9c2<br>
+xe&nbsp;pbd-unplug&nbsp;uuid=a2328c1e-9a2a-324c-3411-17c8f59cc9c2<br>
+        <br>
+        poweroff<br>
+      </div>
+      <div class="codebox"><font color="#990000">Save+Exit</font><br>
+      </div>
+      <div class="codebox"><br>
+        <span style="color:#0000ff;font-weight:400">##########&nbsp;/etc/sysctl.conf</span><br>
+        fs.file-max&nbsp;=&nbsp;2097152<br>
+        net.ipv4.tcp_max_orphans&nbsp;=&nbsp;60000<br>
+        net.ipv4.tcp_no_metrics_save&nbsp;=&nbsp;1<br>
+        net.ipv4.tcp_window_scaling&nbsp;=&nbsp;1<br>
+        net.ipv4.tcp_timestamps&nbsp;=&nbsp;1<br>
+        net.ipv4.tcp_sack&nbsp;=&nbsp;1<br>
+        net.ipv4.tcp_max_syn_backlog&nbsp;=&nbsp;10240<br>
+        net.ipv4.tcp_congestion_control=htcp<br>
+        net.ipv4.tcp_mtu_probing=1<br>
+        net.ipv4.tcp_synack_retries&nbsp;=&nbsp;2&nbsp;<br>
+        net.ipv4.ip_local_port_range&nbsp;=&nbsp;1024&nbsp;65535<br>
+        net.ipv4.tcp_rfc1337&nbsp;=&nbsp;1<br>
+        net.ipv4.tcp_fin_timeout&nbsp;=&nbsp;15&nbsp;<br>
+        net.core.somaxconn&nbsp;=&nbsp;1024<br>
+        net.core.netdev_max_backlog&nbsp;=&nbsp;65536<br>
+        net.core.optmem_max&nbsp;=&nbsp;25165824<br>
+        net.ipv4.tcp_mem&nbsp;=&nbsp;65536&nbsp;131072&nbsp;262144&nbsp;<br>
+        net.ipv4.udp_mem&nbsp;=&nbsp;65536&nbsp;131072&nbsp;262144<br>
+        net.core.rmem_default&nbsp;=&nbsp;25165824<br>
+        net.core.rmem_max&nbsp;=&nbsp;25165824&nbsp;<br>
+net.ipv4.tcp_rmem&nbsp;=&nbsp;20480&nbsp;12582912&nbsp;25165824&nbsp;<br>
+        net.ipv4.udp_rmem_min&nbsp;=&nbsp;16384<br>
+        net.core.wmem_default&nbsp;=&nbsp;25165824<br>
+        net.core.wmem_max&nbsp;=&nbsp;25165824<br>
+net.ipv4.tcp_wmem&nbsp;=&nbsp;20480&nbsp;12582912&nbsp;25165824&nbsp;<br>
+        net.ipv4.udp_wmem_min&nbsp;=&nbsp;16384<br>
+        net.ipv4.tcp_max_tw_buckets&nbsp;=&nbsp;1440000<br>
+        net.ipv4.tcp_tw_reuse&nbsp;=&nbsp;1&nbsp;<br>
+        <span style="color:#0000ff;font-weight:400">#</span><br>
+        kernel.sched_min_granularity_ns&nbsp;=&nbsp;10000000<br>
+        kernel.sched_wakeup_granularity_ns&nbsp;=&nbsp;15000000<br>
+        vm.dirty_ratio&nbsp;=&nbsp;40<br>
+        vm.dirty_background_ratio&nbsp;=&nbsp;10<br>
+        vm.swappiness=10<br>
+        <br>
+        <br>
+        <span style="color:#0000ff;font-weight:400">########&nbsp;/etc/rc.local</span><br>
+        <span style="color:#a52a2a;font-weight:700">echo</span>&nbsp;10&nbsp;&gt;&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>sys<span
+          style="color:#a52a2a;font-weight:700">/</span>module<span
+          style="color:#a52a2a;font-weight:700">/</span>zfs<span
+          style="color:#a52a2a;font-weight:700">/</span>parameters<span
+          style="color:#a52a2a;font-weight:700">/</span>zfs_txg_timeout<br>
+        <span style="color:#a52a2a;font-weight:700">echo</span>&nbsp;3221225472&nbsp;&gt;&gt;&nbsp;<span
+          style="color:#a52a2a;font-weight:700">/</span>sys<span
+          style="color:#a52a2a;font-weight:700">/</span>module<span
+          style="color:#a52a2a;font-weight:700">/</span>zfs<span
+          style="color:#a52a2a;font-weight:700">/</span>parameters<span
+          style="color:#a52a2a;font-weight:700">/</span>zfs_arc_max<br>
+        <span style="color:#a52a2a;font-weight:700">ulimit</span>&nbsp;-n&nbsp;102400<br>
+      </div>
+      <div class="codebox"><br>
+        <span style="color: rgb(0, 0, 255);">*** Finally Reboot Your
+          Server and Check Functionality After Reboot *** </span><br>
+      </div>
+    </div>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <!-- </td></tr></table> -->
+  </body>
+</html>
