@@ -47,22 +47,26 @@ Start with the installation of MariaDB database server:
 
 
 Ensure mariadb service is started and set to start at boot:
+
     sudo systemctl enable mariadb
     sudo systemctl start mariadb
 
 Secure database server by setting root password:
+    
     sudo mysql_secure_installation
 
 
 
 Once the database installation and setup is complete, create a database for phpipam user:
 
+```
 $ sudo mysql -u root -p
 CREATE USER 'phpipam'@'127.0.0.1' IDENTIFIED BY 'PASSWORD-HERE';
 GRANT ALL PRIVILEGES ON . TO 'phpipam'@'127.0.0.1' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 QUIT;
 
+```
 
 **Step 2: Install PHP and required modules**
 
@@ -73,14 +77,15 @@ sudo apt -y install php php-{mysql,curl,gd,intl,pear,imap,memcache,pspell,tidy,x
 **Step 3: Install phpIPAM on Ubuntu 20.04/18.04 Linux**
 We’ll download phpIPAM from Github. Install git first:
 
-sudo apt -y install git
+    sudo apt -y install git
 
 Clone phpIPAM code from github
-sudo git clone --recursive https://github.com/phpipam/phpipam.git /var/www/html/phpipam
+
+    sudo git clone --recursive https://github.com/phpipam/phpipam.git /var/www/html/phpipam
 
 Change to clone directory.
 
-cd /var/www/html/phpipam
+    cd /var/www/html/phpipam
 
 You can also download phpipam from official Sourceforge repository and extract it to your web server directory.
 
@@ -91,28 +96,31 @@ sudo cp config.dist.php config.php
 
 Edit the file to configure database credentials as added on Step 1:
 
-$ sudo vim config.php
-/**
-* database connection details
-******************************/
-$db['host'] = 'localhost';
-$db['user'] = 'phpipam';
-$db['pass'] = 'PASSWORD-HERE';
-$db['name'] = 'phpipam';
-$db['port'] = 3306;
+    sudo vim config.php
+    /**
+    * database connection details
+    ******************************/
+    $db['host'] = 'localhost';
+    $db['user'] = 'phpipam';
+    $db['pass'] = 'PASSWORD-HERE';
+    $db['name'] = 'phpipam';
+    $db['port'] = 3306;
 
 **Option 1: Using Nginx Web server**
 
 Install nginx using the command:
 
-sudo systemctl stop apache2 && sudo systemctl disable apache2
-sudo apt -y install nginx
+    sudo systemctl stop apache2 && sudo systemctl disable apache2
+    sudo apt -y install nginx
 
 Configure nginx:
-sudo vim /etc/nginx/conf.d/phpipam.conf
+
+    sudo vim /etc/nginx/conf.d/phpipam.conf
 
 Add content:
 Ubuntu 20.04:
+
+```
 
 server {
     listen       80;
@@ -136,10 +144,12 @@ location ~ \.php$ {
 
  }
  
+ ```
+ 
 Change ownership of the /var/www/ directory to www-data user and group.
 
-sudo chown -R www-data:www-data /var/www/html
-sudo systemctl restart nginx
+    sudo chown -R www-data:www-data /var/www/html
+    sudo systemctl restart nginx
 
 
 **Step 5: Finish phpIPAM Installation on Ubuntu 20.04/18.04**
@@ -154,20 +164,17 @@ $ sudo vim /etc/hosts
 
 
 On the first page, Select “New phpipam installation“
-
 Since we had created a database, we’ll go with “Automatic database installation“.
-
 For Automatic database installation, set like below.
-
 On successful installation, you should get the admin login page.
 
 **The default Login credentials are:**
-Username: admin
-Password: ipamadmin
+
+    Username: admin
+    Password: ipamadmin
 
 
 You’re prompted to change the admin password on the first login.
-
 You have successfully installed phpIPAM on Ubuntu 20.04 / Ubuntu 18.04 Linux system.
 
 
