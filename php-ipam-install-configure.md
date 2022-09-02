@@ -1,6 +1,7 @@
 **How To Install phpIPAM on Ubuntu 20.04**
 
 The objective of this guide is to help you Install and Configure phpIPAM on Ubuntu 20.04/18.04 Linux distribution. phpIPAM is an open-source php-based web IP address management application (IPAM). Its goal is to provide light, modern and useful IP address management. phpIPAM uses MySQL database backend and jQuery libraries, Ajax and HTML5/CSS3 features.
+
 phpIPAM has the following features:
     • IPv4/IPv6 IP address management
     • Section / Subnet management
@@ -47,6 +48,8 @@ sudo systemctl enable mariadb
 sudo systemctl start mariadb
 Secure database server by setting root password:
 sudo mysql_secure_installation
+
+
 
 Once the database installation and setup is complete, create a database for phpipam user:
 
