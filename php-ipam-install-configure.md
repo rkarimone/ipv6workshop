@@ -41,13 +41,17 @@ phpIPAM has a number of dependencies that we need to install before we can insta
 
 Start with the installation of MariaDB database server:
 
-sudo apt update
-sudo apt install mariadb-server mariadb-client
+
+    sudo apt update
+    sudo apt install mariadb-server mariadb-client
+
+
 Ensure mariadb service is started and set to start at boot:
-sudo systemctl enable mariadb
-sudo systemctl start mariadb
+    sudo systemctl enable mariadb
+    sudo systemctl start mariadb
+
 Secure database server by setting root password:
-sudo mysql_secure_installation
+    sudo mysql_secure_installation
 
 
 
@@ -117,12 +121,11 @@ server {
     index        index.php;
     root   /var/www/html/phpipam;
 
-
-    location / {
+location / {
             try_files $uri $uri/ /index.php$is_args$args;
         }
 
-    location ~ \.php$ {
+location ~ \.php$ {
             try_files $uri =404;
             fastcgi_split_path_info ^(.+\.php)(/.+)$;
              fastcgi_pass   unix:/run/php/php-fpm.sock;
