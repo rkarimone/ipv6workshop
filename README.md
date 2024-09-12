@@ -1,5 +1,5 @@
 # Install and Configuration of FreeRADIUS 
-https://ipv6workshop.cycloneone.net/content/freeradius/
+https://vfs.pico-soft.net/content/freeradius/
 
 
 # Install and Configuration of PHP-IPAM
